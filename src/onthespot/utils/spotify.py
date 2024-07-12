@@ -35,13 +35,8 @@ def get_playlist_data(session, playlist_id):
 def get_track_lyrics(session, track_id, metadata, forced_synced):
     lyrics = []
     try:
-        params = 'format=json&market=from_token'
-        access_token = session.tokens().get("user-read-email")
-        headers = {'Authorization': f'Bearer {access_token}'}
         lyrics_json_req = requests.get(
-            f'https://spclient.wg.spotify.com/lyrics/v1/track/{track_id}',
-            params=params,
-            headers=headers
+            f'https://spotify-lyrics-api-pi.vercel.app/?trackid={track_id}&format=lrc'
         )
 
         for key in metadata.keys():
@@ -52,33 +47,24 @@ def get_track_lyrics(session, track_id, metadata, forced_synced):
                 tracktitle = value
             elif key in ['album_name', 'album']:
                 album = value
-        l_ms = metadata['duration']
         if lyrics_json_req.status_code == 200:
             lyrics_json = lyrics_json_req.json()
             lyrics.append(f'[ti:{tracktitle}]')
             lyrics.append(f'[au:{";".join(writer for writer in metadata["credits"].get("writers", []))}]')
             lyrics.append(f'[ar:{artist}]')
             lyrics.append(f'[al:{album}]')
-            lyrics.append(f'[by:{lyrics_json["provider"]}]')
             lyrics.append(f'[ve:{config.version}]')
             lyrics.append('[re:casualsnek-onTheSpot]')
-            if round((l_ms/1000)/60) < 10:
-                digit="0"
-            else:
-                digit=""
-            lyrics.append(f'[length:{digit}{round((l_ms/1000)/60)}:{round((l_ms/1000)%60)}]\n')
 
-            if lyrics_json['kind'].lower() == 'text':
+            if lyrics_json['syncType'] == 'UNSYNCED':
                 # It's un synced lyrics, if not forcing synced lyrics return it
                 if not forced_synced:
-                    lyrics = [line['words'][0]['string'] for line in lyrics_json['lines']]
-            elif lyrics_json['kind'].lower() == 'line':
+                    lyrics = [line['words'] for line in lyrics_json['lines']]
+            elif lyrics_json['syncType'] == 'LINE_SYNCED':
                 for line in lyrics_json['lines']:
-                    minutes, seconds = divmod(line['time'] / 1000, 60)
-                    lyrics.append(f'[{minutes:0>2.0f}:{seconds:05.2f}] {line["words"][0]["string"]}')
+                    lyrics.append(f'[{line["timeTag"]}] {line["words"]}')
         else:
-            logger.warning(f'Failed to get lyrics for track id: {track_id}, '
-                           f'statucode: {lyrics_json_req.status_code}, Text: {lyrics_json_req.text}')
+            logger.warning(f'Failed to get lyrics for track id: {track_id}, statusCode: {lyrics_json_req.status_code}, Text: {lyrics_json_req.text}')
     except (KeyError, IndexError):
         logger.error(f'Failed to get lyrics for track id: {track_id}, ')
     return None if len(lyrics) <= 2 else '\n'.join(lyrics)
