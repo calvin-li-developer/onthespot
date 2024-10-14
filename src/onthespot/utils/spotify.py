@@ -98,11 +98,11 @@ def sanitize_data(value, allow_path_separators=False, escape_quotes=False):
     for i in sanitize:
         value = value.replace(i, '')
     if os.name == 'nt':
-        value = value.replace('|', '-')
+        value = value.replace('|', '')
         drive_letter, tail = os.path.splitdrive(value)
         value = os.path.join(
             drive_letter,
-            tail.replace(':', '-')
+            tail.replace(':', '')
         )
         value = value.rstrip('.')
     else:
