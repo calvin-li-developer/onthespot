@@ -84,33 +84,33 @@ jobs:
           asset_content_type: application/gzip
 
   # macOS Build
-  macos-build:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+  # macos-build:
+  #   runs-on: macos-latest
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v3
 
-      - name: Install Dependencies
-        run: |
-          brew install pyinstaller
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+  #     - name: Install Dependencies
+  #       run: |
+  #         brew install pyinstaller
+  #         python -m pip install --upgrade pip
+  #         pip install -r requirements.txt
 
-      - name: Make Build Script Executable
-        run: chmod +x build_mac.sh
+  #     - name: Make Build Script Executable
+  #       run: chmod +x build_mac.sh
 
-      - name: Run macOS Build Script
-        run: build_mac.sh
-        shell: bash
+  #     - name: Run macOS Build Script
+  #       run: build_mac.sh
+  #       shell: bash
 
-      - name: Upload macOS DMG to Release
-        if: ${{ github.event.inputs.release == 'true' }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: dist/*.dmg  # Upload .dmg from dist/
-          asset_name: OnTheSpot.dmg
-          asset_content_type: application/x-apple-diskimage
+  #     - name: Upload macOS DMG to Release
+  #       if: ${{ github.event.inputs.release == 'true' }}
+  #       uses: actions/upload-release-asset@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         upload_url: ${{ github.event.release.upload_url }}
+  #         asset_path: dist/*.dmg  # Upload .dmg from dist/
+  #         asset_name: OnTheSpot.dmg
+  #         asset_content_type: application/x-apple-diskimage
 
