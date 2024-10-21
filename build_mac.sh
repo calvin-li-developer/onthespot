@@ -1,58 +1,66 @@
 #!/bin/bash
 
-clean_build_dirs () {
-    [ -d ./__pycache__ ] && rm -rf __pycache__
-    [ -d ./build ] && rm -rf ./build
-    [ -d ./venv ] && rm -rf ./venv
-    [ -f ./onthespot_mac.spec ] && rm ./onthespot_mac.spec
-    [ -f ./onthespot_mac_ffm.spec ] && rm ./onthespot_mac_ffm.spec
-    [ -d ./dist/onthespot_mac ] && rm -rf ./dist/onthespot_mac
-}
+echo "========= OnTheSpot MacOS Build Script =========="
 
+# Check the current folder and change directory if necessary
+FOLDER_NAME=$(basename "$PWD")
 
-echo "========= OnTheSpot MacOS Build Script ==========="
-echo " => Cleaning up !"
-[ -d ./dist/onthespot_mac.app ] && rm -rf ./dist/onthespot_mac.app
-[ -d ./dist/onthespot_mac_ffm.app ] && rm -rf ./dist/onthespot_mac_ffm.app
-clean_build_dirs
+if [ "$FOLDER_NAME" == "scripts" ]; then
+    echo "You are in the scripts folder. Changing to the parent directory..."
+    cd ..
+elif [ "$FOLDER_NAME" != "onthespot" ]; then
+    echo "Make sure that you are inside the project folder. Current folder is: $FOLDER_NAME"
+    exit 1
+fi
 
-echo " => Creating virtual env."
+# Clean up previous builds
+echo " => Cleaning up!"
+rm -rf ./dist/onthespot_mac.app ./dist/onthespot_mac_ffm.app
+
+# Create virtual environment
+echo " => Creating virtual environment..."
 python3 -m venv venv
 
-echo " => Switching to virtual env."
+# Activate virtual environment
+echo " => Activating virtual environment..."
 source ./venv/bin/activate
 
-echo " => Installing 'pyinstaller' via pip..."
-pip install pyinstaller
+# Upgrade pip and install dependencies
+echo " => Upgrading pip and installing dependencies using Bash..."
+venv/bin/pip install --upgrade pip wheel pyinstaller
 
-echo " => Installing dependencies to venv with pip..."
-pip install -r requirements.txt
+# Install project-specific dependencies
+echo " => Installing project-specific dependencies..."
+venv/bin/pip install -r requirements.txt
 
+# Check for FFmpeg binary and set build options
 if [ -f "ffbin_mac/ffmpeg" ]; then
-    echo " => Found 'ffbin_mac' directory and ffmpeg binary.. Using ffmpeg binary append mode "
-    pyinstaller --windowed \
-                --add-data="src/onthespot/gui/qtui/*.ui:onthespot/gui/qtui" \
-                --add-data="src/onthespot/resources/*.png:onthespot/resources" \
-                --add-binary="ffbin_mac/*:onthespot/bin/ffmpeg" \
-                --paths="src/onthespot" \
-                --name="onthespot_mac_ffm" \
-                --icon="src/onthespot/resources/icon.png" \
-                src/portable.py
+    echo " => Found 'ffbin_mac' directory and ffmpeg binary. Including FFmpeg in the build."
+    FFBIN='--add-binary=ffbin_mac/*:onthespot/bin/ffmpeg'
 else
-    echo " => Building to use ffmpeg binary from system... "
-    pyinstaller --windowed \
-                --add-data="src/onthespot/gui/qtui/*.ui:onthespot/gui/qtui" \
-                --add-data="src/onthespot/resources/*.png:onthespot/resources" \
-                --paths="src/onthespot" \
-                --name="onthespot_mac" \
-                --icon="src/onthespot/resources/icon.png" \
-                src/portable.py
+    echo " => FFmpeg binary not found. Building without it."
 fi
-echo " => Setting executable permissions.. "
-[ -f ./dist/onthespot_mac ] && chmod +x ./dist/onthespot_mac &>./build_nix.log
-[ -f ./dist/onthespot_mac_ffm ] && chmod +x ./dist/onthespot_mac_ffm &>./build_nix.log
 
-echo " => Cleaning .. "
-clean_build_dirs
+# Run PyInstaller to create the app
+pyinstaller --windowed \
+    --hidden-import="zeroconf._utils.ipaddress" \
+    --hidden-import="zeroconf._handlers.answers" \
+    --add-data="src/onthespot/gui/qtui/*.ui:onthespot/gui/qtui" \
+    --add-data="src/onthespot/resources/icons/*.png:onthespot/resources/icons" \
+    --add-data="src/onthespot/resources/themes/*.qss:onthespot/resources/themes" \
+    --add-data="src/onthespot/resources/translations/*.qm:onthespot/resources/translations" \
+    $FFBIN \
+    --paths="src/onthespot" \
+    --name="OnTheSpot" \
+    --icon="src/onthespot/resources/icons/onthespot.png" \
+    src/portable.py
 
-echo " => Done "
+# Set executable permissions
+echo " => Setting executable permissions..."
+chmod +x ./dist/OnTheSpot.app
+
+# Clean up unnecessary files
+echo " => Cleaning up temporary files..."
+rm -rf __pycache__ build venv *.spec
+
+echo " => Done!"

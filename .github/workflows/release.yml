@@ -30,7 +30,6 @@ jobs:
       - name: Run Windows Build Script
         shell: cmd
         run: |
-          build_winC1.bat
           build_winC2.bat
 
       - name: Upload Windows Executable to Release
