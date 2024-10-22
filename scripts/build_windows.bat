@@ -37,7 +37,7 @@ call venvwin\Scripts\activate.bat || (
 
 REM Install dependencies
 echo =^> Installing dependencies via pip...
-for %%P in (pip wheel pyinstaller) do (
+for %%P in (pip wheel pyinstaller winsdk) do (
     python -m pip show %%P >nul || python -m pip install --upgrade %%P || (
         echo Failed to install %%P. Exiting...
         timeout /t 10 >nul
@@ -59,7 +59,11 @@ curl -L https://github.com/GyanD/codexffmpeg/releases/download/7.1/ffmpeg-7.1-es
     exit /b 1
 )
 
-powershell -Command "Expand-Archive -Path build\ffmpeg.zip -DestinationPath build\ffmpeg" || (
+if not exist build\ffmpeg (
+    mkdir "build\ffmpeg"
+)
+
+tar -xf build\ffmpeg.zip -C build\ffmpeg || (
     echo Failed to extract ffmpeg. Exiting...
     timeout /t 10 >nul
     exit /b 1
