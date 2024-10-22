@@ -88,8 +88,6 @@ if exist ffbin_win\ffmpeg.exe (
     pyinstaller --onefile --noconsole --noconfirm ^
         --hidden-import="zeroconf._utils.ipaddress" ^
         --hidden-import="zeroconf._handlers.answers" ^
-        --add-data="src/onthespot/resources/translations/*.qm;onthespot/resources/translations" ^
-        --add-data="src/onthespot/resources/themes/*.qss;onthespot/resources/themes" ^
         --add-data="src/onthespot/gui/qtui/*.ui;onthespot/gui/qtui" ^
         --add-data="src/onthespot/resources/icons/*.png;onthespot/resources/icons" ^
         --add-binary="ffbin_win/ffmpeg.exe;onthespot/bin/ffmpeg" ^
@@ -106,8 +104,6 @@ if exist ffbin_win\ffmpeg.exe (
     pyinstaller --onefile --noconsole --noconfirm ^
         --hidden-import="zeroconf._utils.ipaddress" ^
         --hidden-import="zeroconf._handlers.answers" ^
-        --add-data="src/onthespot/resources/translations/*.qm;onthespot/resources/translations" ^
-        --add-data="src/onthespot/resources/themes/*.qss;onthespot/resources/themes" ^
         --add-data="src/onthespot/gui/qtui/*.ui;onthespot/gui/qtui" ^
         --add-data="src/onthespot/resources/icons/*.png;onthespot/resources/icons" ^
         --paths="src/onthespot" ^
