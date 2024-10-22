@@ -93,7 +93,7 @@ if exist ffbin_win\ffmpeg.exe (
         --add-binary="ffbin_win/ffmpeg.exe;onthespot/bin/ffmpeg" ^
         --paths="src/onthespot" ^
         --name="onthespot_win_ffm" ^
-        --icon="src/onthespot/resources/icons/onthespot.png" ^
+        --icon="src/onthespot/resources/icon.png" ^
         src\portable.py || (
         echo PyInstaller build failed. Exiting...
         timeout /t 10 >nul
@@ -108,7 +108,7 @@ if exist ffbin_win\ffmpeg.exe (
         --add-data="src/onthespot/resources/icons/*.png;onthespot/resources/icons" ^
         --paths="src/onthespot" ^
         --name="onthespot_win" ^
-        --icon="src/onthespot/resources/icons/onthespot.png" ^
+        --icon="src/onthespot/resources/icon.png" ^
         src\portable.py || (
         echo PyInstaller build failed. Exiting...
         timeout /t 10 >nul
