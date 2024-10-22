@@ -89,7 +89,7 @@ if exist ffbin_win\ffmpeg.exe (
         --hidden-import="zeroconf._utils.ipaddress" ^
         --hidden-import="zeroconf._handlers.answers" ^
         --add-data="src/onthespot/gui/qtui/*.ui;onthespot/gui/qtui" ^
-        --add-data="src/onthespot/resources/icons/*.png;onthespot/resources/icons" ^
+        --add-data="src/onthespot/resources/*.png;onthespot/resources" ^
         --add-binary="ffbin_win/ffmpeg.exe;onthespot/bin/ffmpeg" ^
         --paths="src/onthespot" ^
         --name="onthespot_win_ffm" ^
@@ -105,7 +105,7 @@ if exist ffbin_win\ffmpeg.exe (
         --hidden-import="zeroconf._utils.ipaddress" ^
         --hidden-import="zeroconf._handlers.answers" ^
         --add-data="src/onthespot/gui/qtui/*.ui;onthespot/gui/qtui" ^
-        --add-data="src/onthespot/resources/icons/*.png;onthespot/resources/icons" ^
+        --add-data="src/onthespot/resources/*.png;onthespot/resources" ^
         --paths="src/onthespot" ^
         --name="onthespot_win" ^
         --icon="src/onthespot/resources/icon.png" ^
