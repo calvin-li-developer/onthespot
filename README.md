@@ -1,3 +1,6 @@
+** This Repo is forked from [onthespot](https://github.com/casualsnek/onthespot) **
+
+
 ![Logo](src/onthespot/resources/icon.png)
 
 # Onthespot
@@ -74,7 +77,7 @@ cd onthespot
 If you want builds with ffmpeg embedded download ffmpeg binaries for your os from [Here](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full.7z). 
 Create a new directory named 'ffbin_nix' in repository root directory. Copy three files 'ffmpeg', 'ffprobe', 'ffplay' from downloaded archive to just created 'ffbin_nix' directory then run;
 ```bash
-bash ./build_linux.sh
+sh ./scripts/build_linux.sh
 ```
 After the command completes, you should have a 'dist' directory in repository root containing built 'onthespot_linux' binary.
 
@@ -89,27 +92,9 @@ If you do not have git installed you can also download the Project source zip fr
 If you want builds with ffmpeg embedded download ffmpeg binaries for your os from [Here](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full.7z). 
 Create a new directory named 'ffbin_win' in repository root directory. Copy three files 'ffmpeg.exe', 'ffprobe.exe', 'ffplay.exe' from downloaded archive to just created 'ffbin_win' directory then run;
 ```cmd
-build_winC1.bat
-build_winC2.bat
+.\scripts\build_windows.bat
 ```
 After the command completes, you should have a 'dist' directory in repository root containing built 'onthespot_win.exe' binary.
-
-### 2.1.3. On MacOS
-
-**NOTE :** This only builds an app for the specific processor architecture you are on. It does not build a universal binary
-
-Open terminal emulator and run the following command to clone the repository and build.
-```bash
-git clone https://github.com/casualsnek/onthespot
-cd onthespot
-```
-
-If you want builds with ffmpeg embedded download ffmpeg binaries for your os from [Here](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full.7z).
-Create a new directory named 'ffbin_mac' in repository root directory. Copy three files 'ffmpeg', 'ffprobe', 'ffplay' from the downloaded archive to the newly created 'ffbin_mac' directory then run:
-```bash
-./build_mac.sh
-```
-After the command completes, you should have a 'dist' directory in repository root containing the 'onthespot_mac.app' binary.
 
 ## 2.2.  Building wheel for installing with pip
 You can also build onthespot as wheel and install it as python module via pip in your system. It provides better integration with system, like using your system's Qt style and themes as well as you can use provided icon and .desktop file for better integration under linux systems.
