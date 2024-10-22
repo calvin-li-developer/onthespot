@@ -25,9 +25,9 @@ jobs:
         uses: actions/checkout@v4.2.1
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5.2.0
         with:
-          python-version: '3.10'
+          python-version: '3.13'
 
       - name: Run Windows Build Script
         run: scripts\build_windows.bat
