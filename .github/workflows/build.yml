@@ -9,6 +9,9 @@ on:
   
   workflow_dispatch:
 
+permissions:
+  pull-requests: write  # Allow merging pull requests
+  contents: write        # Ensure write access to repo content
 
 jobs:
   # Windows Build
