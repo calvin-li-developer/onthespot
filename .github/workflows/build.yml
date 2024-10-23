@@ -1,12 +1,6 @@
 name: Build
 
-on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - '.github/**'
-  
+on:  
   pull_request:
     branches:
       - main
