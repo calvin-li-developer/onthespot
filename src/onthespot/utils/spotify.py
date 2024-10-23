@@ -118,7 +118,7 @@ def sanitize_data(value, allow_path_separators=False, escape_quotes=False):
         return ''
     sanitize = ['*', '?', '<', '>', '"'] if os.name == 'nt' else []
     if os.name == 'nt':
-        value = value.replace('/', '\\')
+        value = value.replace('/', '∕') # replace "/" with "∕(U+2215)"
     if not allow_path_separators:
         sanitize.append(os.path.sep)
     for i in sanitize:
