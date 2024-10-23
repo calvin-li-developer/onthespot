@@ -572,7 +572,7 @@ class MainWindow(QMainWindow):
             return None
         if search_term.startswith('https://'):
             logger.info(f"Search clicked with value with url {search_term}")
-            self.__download_by_url(search_term)
+            self.__download_by_url(search_term, hide_dialog=True)
             self.inp_search_term.setText('')
             return True
         else:
