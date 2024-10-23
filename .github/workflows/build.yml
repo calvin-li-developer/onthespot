@@ -33,6 +33,12 @@ jobs:
         run: scripts\build_windows.bat
         shell: cmd
 
+      - name: Upload Artifact
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 #v4.3.3
+        with:
+          name: windows_binary
+          path: dist
+            
   # Linux Build
   linux-build:
     runs-on: ubuntu-latest
@@ -56,11 +62,9 @@ jobs:
       - name: Run Linux Build Script
         run: sh scripts/build_linux.sh
         shell: bash
-
-      - name: Create Linux tar.gz
-        run: |
-          cd dist
-          tar -czvf onthespot_linux.tar.gz onthespot_linux
-
-  #         asset_content_type: application/x-apple-diskimage
-
+      
+      - name: Upload Artifact
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 #v4.3.3
+        with:
+          name: linux_binary
+          path: dist
