@@ -136,7 +136,7 @@ def sanitize_data(value, allow_path_separators=False, escape_quotes=False):
             # Since convert uses double quotes, we may need to escape if it
             # exists in path, on windows double quotes is
             # not allowed in path and will be removed
-            value = value.replace('"', '\\"')
+            value = value.replace('"', '”')
     return value
 
 
