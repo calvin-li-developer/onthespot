@@ -71,7 +71,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Merge PR
-        if: ${{ github.event.pull_request.user.login == github.repository_owner }}
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.user.login == github.repository_owner }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
