@@ -34,62 +34,50 @@ def get_playlist_data(session, playlist_id):
 
 def get_track_lyrics(session, track_id, metadata, forced_synced):
     lyrics = []
+    artist = None
+    tracktitle = None
+    album = None
+    for key in metadata.keys():
+        value = metadata[key]
+        if key == 'artists':
+            artist = conv_artist_format(value)
+        elif key in ['name', 'track_title', 'tracktitle']:
+            tracktitle = value
+        elif key in ['album_name', 'album']:
+            album = value
+    lyrics.append(f'[ti:{tracktitle}]')
+    lyrics.append(f'[au:{";".join(writer for writer in metadata["credits"].get("writers", []))}]')
+    lyrics.append(f'[ar:{artist}]')
+    lyrics.append(f'[al:{album}]')
+    lyrics.append(f'[ve:{config.version}]')
+    
     try:
+        logger.info("Fetching Lyrics from https://spclient.wg.spotify.com")
+        access_token = session.tokens().get("user-read-email")
+        headers = {
+            'app-platform': 'WebPlayer',
+            'Authorization': f'Bearer {access_token}',
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36"
+        }
         lyrics_json_req = requests.get(
-            f'https://spotify-lyrics-api-pi.vercel.app/?trackid={track_id}&format=lrc'
+            f'https://spclient.wg.spotify.com/color-lyrics/v2/track/{track_id}',
+            params='format=json&market=from_token',
+            headers=headers
         )
-
-        for key in metadata.keys():
-            value = metadata[key]
-            if key == 'artists':
-                artist = conv_artist_format(value)
-            elif key in ['name', 'track_title', 'tracktitle']:
-                tracktitle = value
-            elif key in ['album_name', 'album']:
-                album = value
-        lyrics.append(f'[ti:{tracktitle}]')
-        lyrics.append(f'[au:{";".join(writer for writer in metadata["credits"].get("writers", []))}]')
-        lyrics.append(f'[ar:{artist}]')
-        lyrics.append(f'[al:{album}]')
-        lyrics.append(f'[ve:{config.version}]')
-        lyrics.append('[re:casualsnek-onTheSpot]')
-        if lyrics_json_req.status_code == 200 and lyrics_json_req.json()['error'] == False:
-            logger.info("Fetching Lyrics from https://spotify-lyrics-api-pi.vercel.app")
-            lyrics_json = lyrics_json_req.json()
-            if lyrics_json['syncType'] == 'UNSYNCED':
-                # It's un synced lyrics, if not forcing synced lyrics return it
-                if not forced_synced:
-                    lyrics = [line['words'] for line in lyrics_json['lines']]
-            elif lyrics_json['syncType'] == 'LINE_SYNCED':
-                for line in lyrics_json['lines']:
-                    lyrics.append(f'[{line["timeTag"]}] {line["words"]}')
+        response = json.loads(lyrics_json_req.text)
+        if response == None:
+            return None
+        
+        if response["lyrics"]["syncType"] == "LINE_SYNCED":
+            for line in response["lyrics"]["lines"]:
+                minutes, seconds = divmod(int(line['startTimeMs']) / 1000, 60)
+                lyrics.append(f'[{minutes:0>2.0f}:{seconds:05.2f}] {line["words"]}')
         else:
-            logger.info("Fetching Lyrics from https://spclient.wg.spotify.com")
-            access_token = session.tokens().get("user-read-email")
-            headers = {
-                'app-platform': 'WebPlayer',
-                'Authorization': f'Bearer {access_token}',
-                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36"
-            }
-            lyrics_json_req = requests.get(
-                f'https://spclient.wg.spotify.com/color-lyrics/v2/track/{track_id}',
-                params='format=json&market=from_token',
-                headers=headers
-            )
-            response = json.loads(lyrics_json_req.text)
-            if response == None:
-                return None
-            
-            if response["lyrics"]["syncType"] == "LINE_SYNCED":
-                for line in response["lyrics"]["lines"]:
-                    minutes, seconds = divmod(int(line['startTimeMs']) / 1000, 60)
-                    lyrics.append(f'[{minutes:0>2.0f}:{seconds:05.2f}] {line["words"]}')
-            else:
-                # It's un synced lyrics, if not forcing synced lyrics return it
-                if not config.get("only_synced_lyrics"):
-                    lyrics = [line['words'][0]['string'] for line in response['lines']]
+            # It's un synced lyrics, if not forcing synced lyrics return it
+            if not config.get("only_synced_lyrics"):
+                lyrics = [line['words'][0]['string'] for line in response['lines']]
 
-            logger.warning(f'Failed to get lyrics for track id: {track_id}, statusCode: {lyrics_json_req.status_code}, Text: {lyrics_json_req.text}')
+        logger.warning(f'Failed to get lyrics for track id: {track_id}, statusCode: {lyrics_json_req.status_code}, Text: {lyrics_json_req.text}')
     except (KeyError, IndexError):
         logger.error(f'Failed to get lyrics for track id: {track_id}, ')
         return None
@@ -227,10 +215,10 @@ def convert_audio_format(filename, quality):
             f'Converting media with ffmpeg. Built commandline {command}'
             )
         # Run subprocess with CREATE_NO_WINDOW flag on Windows
-        if os.name == 'nt':
-            subprocess.check_call(command, shell=False, creationflags=subprocess.CREATE_NO_WINDOW)
-        else:
-            subprocess.check_call(command, shell=False)
+        # if os.name == 'nt':
+        #     subprocess.check_call(command, shell=False, creationflags=subprocess.CREATE_NO_WINDOW)
+        # else:
+        subprocess.check_call(command, shell=False)
         os.remove(temp_name)
     else:
         raise FileNotFoundError
