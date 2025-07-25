@@ -89,7 +89,7 @@ if defined FFMPEG_DIR (
 REM Check for ffmpeg binary and build
 if exist ffbin_win\ffmpeg.exe (
     echo =^> Found ffmpeg binary, including it in the build...
-    pyinstaller --onefile --noconsole --noconfirm ^
+    pyinstaller --onefile --noconfirm ^
         --hidden-import="zeroconf._utils.ipaddress" ^
         --hidden-import="zeroconf._handlers.answers" ^
         --add-data="src/onthespot/gui/qtui/*.ui;onthespot/gui/qtui" ^
@@ -105,7 +105,7 @@ if exist ffbin_win\ffmpeg.exe (
     )
 ) else (
     echo =^> FFmpeg binary not found, building without it...
-    pyinstaller --onefile --noconsole --noconfirm ^
+    pyinstaller --onefile --noconfirm ^
         --hidden-import="zeroconf._utils.ipaddress" ^
         --hidden-import="zeroconf._handlers.answers" ^
         --add-data="src/onthespot/gui/qtui/*.ui;onthespot/gui/qtui" ^
