@@ -57,21 +57,21 @@ def login_user(username: str, password: str, login_data_dir: str, uuid: str) -> 
         logger.info(f"Session file exists for user, attempting to use it '{username[:4]}****@****.***'")
         logger.debug("Restoring user session")
         # Session exists try loading it
+        config = Session.Configuration.Builder().set_stored_credential_file(session_json_path).build()
+        # For some reason initialising session as None prevents premature application exit
+        session = None
         try:
-            config = Session.Configuration.Builder().set_stored_credential_file(session_json_path).build()
-            logger.debug("Session config created")
-            # For some reason initialising session as None prevents premature application exit
-            session = None
             session = Session.Builder(conf=config).stored_file(session_json_path).create()
-            logger.debug("Session created")
-            premium = True if session.get_user_attribute("type") == "premium" else False
-            logger.info(f"Login successful for user '{username[:4]}****@****.***'")
-            return [True, session, session_json_path, premium, uuid]
-        except (RuntimeError, Session.SpotifyAuthenticationException):
-            logger.error(f"Failed logging in user '{username[:4]}****@****.***', invalid credentials")
-        except Exception as e:
-            logger.error(f"Failed logging in user '{username[:4]}****@****.***', unexpected error ! : {str(e)}; {traceback.format_exc()}")
+        except Exception:
+            time.sleep(3)
+            session = Session.Builder(conf=config).stored_file(session_json_path).create()
+        if Session == None:
             return [False, None, "", False, uuid]
+        logger.debug("Session created")
+        logger.info(f"Login successful for user '{username[:4]}*******'")
+        premium = True if session.get_user_attribute("type") == "premium" else False
+        logger.info(f"Login successful for user '{username[:4]}****@****.***'")
+        return [True, session, session_json_path, premium, uuid]
     else:
         logger.info(f"Session file does not exist user '{username[:4]}****@****.***', attempting login with uname/pass")
         try:
