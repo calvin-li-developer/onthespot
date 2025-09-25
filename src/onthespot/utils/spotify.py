@@ -50,6 +50,12 @@ def get_track_lyrics(session, track_id, metadata, forced_synced):
     lyrics.append(f'[ar:{artist}]')
     lyrics.append(f'[al:{album}]')
     lyrics.append(f'[ve:{config.version}]')
+    l_ms = metadata['duration']
+    if round((l_ms/1000)/60) < 10:
+        digit="0"
+    else:
+        digit=""
+    lyrics.append(f'[length:{digit}{round((l_ms/1000)/60)}:{round((l_ms/1000)%60)}]\n')
     
     try:
         logger.info("Fetching Lyrics from https://spclient.wg.spotify.com")
