@@ -183,8 +183,20 @@ def convert_audio_format(filename, quality):
         target_path = Path(filename)
         bitrate = "320k" if quality == AudioQuality.VERY_HIGH else "160k"
         temp_name = os.path.join(
-            target_path.parent, ".~"+target_path.stem+".ogg"
+            target_path.parent, f".~{target_path.stem}.ogg"
             )
+        temp_convert_name = os.path.join(
+            target_path.parent, f".~{sanitize_data(
+                filename,
+                allow_path_separators=True,
+                escape_quotes=False
+                )}"
+            )
+        finalized_name = sanitize_data(
+                filename,
+                allow_path_separators=True,
+                escape_quotes=False
+                )
         if os.path.isfile(temp_name):
             os.remove(temp_name)
         os.rename(filename, temp_name)
@@ -210,13 +222,7 @@ def convert_audio_format(filename, quality):
         for param in config.get('ffmpeg_args'):
             command.append(param)
         # Add output parameter at last
-        command.append(
-            sanitize_data(
-                filename,
-                allow_path_separators=True,
-                escape_quotes=False
-                )
-            )
+        command.append(temp_convert_name)
         logger.info(
             f'Converting media with ffmpeg. Built commandline {command}'
             )
@@ -226,6 +232,7 @@ def convert_audio_format(filename, quality):
         # else:
         subprocess.check_call(command, shell=False)
         os.remove(temp_name)
+        os.rename(temp_convert_name, finalized_name)
     else:
         raise FileNotFoundError
 
