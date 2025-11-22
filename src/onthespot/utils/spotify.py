@@ -103,7 +103,7 @@ def get_tracks_from_playlist(session, playlist_id):
     return songs
 
 
-def sanitize_data(value, allow_path_separators=False, escape_quotes=False, prefix=None):
+def sanitize_data(value, allow_path_separators=False, escape_quotes=False):
     logger.info(
         f'Sanitising string: "{value}"; '
         f'Allow path separators: {allow_path_separators}'
@@ -119,8 +119,6 @@ def sanitize_data(value, allow_path_separators=False, escape_quotes=False, prefi
         value = value.replace(i, '')
     if os.name == 'nt':
         value = value.replace('|', '')
-        if prefix and isinstance(prefix, str):
-            value = prefix + value
         drive_letter, tail = os.path.splitdrive(value)
         value = os.path.join(
             drive_letter,
@@ -187,11 +185,9 @@ def convert_audio_format(filename, quality):
         temp_name = os.path.join(
             target_path.parent, f".~{target_path.stem}.ogg"
             )
-        temp_convert_name = sanitize_data(
-                filename,
-                allow_path_separators=True,
-                escape_quotes=False, prefix='.~'
-                )
+        temp_convert_name = os.path.join(
+            target_path.parent, f".~{target_path.stem}.{config.get('media_format')}"
+            )
         finalized_name = sanitize_data(
                 filename,
                 allow_path_separators=True,
