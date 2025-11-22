@@ -14,7 +14,7 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError
 from ..otsconfig import config
 from ..runtimedata import get_logger, cancel_list, failed_downloads, unavailable, session_pool
 from ..utils.spotify import check_premium, get_song_info, convert_audio_format, set_music_thumbnail, set_audio_tags, \
-    get_episode_info, get_track_lyrics
+    get_episode_info, get_track_lyrics, sanitize_data
 from ..utils.utils import re_init_session
 
 
