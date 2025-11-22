@@ -185,13 +185,11 @@ def convert_audio_format(filename, quality):
         temp_name = os.path.join(
             target_path.parent, f".~{target_path.stem}.ogg"
             )
-        temp_convert_name = os.path.join(
-            target_path.parent, sanitize_data(
+        temp_convert_name = sanitize_data(
                 f".~{filename}",
                 allow_path_separators=True,
                 escape_quotes=False
                 )
-            )
         finalized_name = sanitize_data(
                 filename,
                 allow_path_separators=True,
