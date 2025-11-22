@@ -188,11 +188,6 @@ def convert_audio_format(filename, quality):
         temp_convert_name = os.path.join(
             target_path.parent, f".~{target_path.stem}.{config.get('media_format')}"
             )
-        finalized_name = sanitize_data(
-                filename,
-                allow_path_separators=True,
-                escape_quotes=False
-                )
         if os.path.isfile(temp_name):
             os.remove(temp_name)
         os.rename(filename, temp_name)
@@ -228,7 +223,7 @@ def convert_audio_format(filename, quality):
         # else:
         subprocess.check_call(command, shell=False)
         os.remove(temp_name)
-        os.rename(temp_convert_name, finalized_name)
+        return temp_convert_name
     else:
         raise FileNotFoundError
 

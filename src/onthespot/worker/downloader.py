@@ -165,11 +165,17 @@ class DownloadWorker(QObject):
                             self.progress.emit([trk_track_id_str, None, [downloaded, total_size]])
                     if not config.get("force_raw"):
                         self.progress.emit([trk_track_id_str, "Converting", None])
-                        convert_audio_format(filename, quality)
+                        temp_convert_name = convert_audio_format(filename, quality)
                         self.progress.emit([trk_track_id_str, "Writing metadata", None])
-                        set_audio_tags(filename, song_info, trk_track_id_str)
+                        set_audio_tags(temp_convert_name, song_info, trk_track_id_str)
                         self.progress.emit([trk_track_id_str, "Setting thumbnail", None])
-                        set_music_thumbnail(filename, song_info['image_url'])
+                        set_music_thumbnail(temp_convert_name, song_info['image_url'])
+                        finalized_name = sanitize_data(
+                            filename,
+                            allow_path_separators=True,
+                            escape_quotes=False
+                            )
+                        os.rename(temp_convert_name, finalized_name)
                     else:
                         self.logger.warning(
                             f"Force raw is disabled for track by id '{trk_track_id_str}', "
