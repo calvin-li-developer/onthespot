@@ -21,7 +21,7 @@ class Config:
             "max_threads": 2, # Maximum number of thread we can spawn
             "parsing_acc_sn": 1, # Serial number of account that will be used for parsing links
             "download_root": os.path.join(os.path.expanduser("~"), "Music", "OnTheSpot"), # Root dir for downloads
-            "download_delay": 1, # Seconds to wait before next download
+            "download_delay": 35, # Seconds to wait before next download
             "track_name_formatter": "{track_number:02d} {name}", # Track name format string
             "album_name_formatter": f"{{artist}}{os.path.sep}{{album}}", # Album name format string
             "playlist_name_formatter": f"MyPlaylists{os.path.sep}{{name}} by {{owner}}", # Playlist name format string
