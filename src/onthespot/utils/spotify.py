@@ -451,7 +451,7 @@ def make_call(url, token, params=None, no_cache=False):
                 pass
         logger.debug(f'URL "{url}" has cache miss ! HASH: {request_key}; Fetching data')
         
-    logger.info(f"URL: {url}, HEADER: 'Authorization': Bearer {token}, PARAMS: {json.loads(params)}")
+    logger.info(f"URL: {url}, HEADER: 'Authorization': Bearer {token}, PARAMS: {json.dumps(params)}")
     
     response = requests.get(url, headers={"Authorization": "Bearer %s" % token}, params=params).text
     if not no_cache:
