@@ -450,12 +450,9 @@ def make_call(url, token, params=None, no_cache=False):
                 logger.error(f'URL "{url}" cache has invalid data, retring request !')
                 pass
         logger.debug(f'URL "{url}" has cache miss ! HASH: {request_key}; Fetching data')
-    request_struct = {
-        "url": url,
-        "headers": {"Authorization": f"Bearer {token}"},
-        "params": params
-    }
-    logger.info(f"Request: {request_struct}")
+        
+    logger.info(f"URL: {url}, HEADER: 'Authorization': Bearer {token}, PARAMS: {json.loads(params)}")
+    
     response = requests.get(url, headers={"Authorization": "Bearer %s" % token}, params=params).text
     if not no_cache:
         with open(req_cache_file, 'w', encoding='utf-8') as cf:
