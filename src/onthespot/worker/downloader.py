@@ -121,7 +121,7 @@ class DownloadWorker(QObject):
                     track_id = TrackId.from_base62(track_id_str)
                     stream = session.content_feeder().load(
                         track_id, VorbisOnlyAudioQuality(quality), False, None)
-                    os.makedirs(os.path.dirname(filename), exist_ok=True)
+                    os.makedirs(os.path.dirname(filename).replace(':', '꞉'), exist_ok=True) # replace ":" with "꞉(U+A789)"
                     total_size = stream.input_stream.size
                     downloaded = 0
                     _CHUNK_SIZE = chunk_size
