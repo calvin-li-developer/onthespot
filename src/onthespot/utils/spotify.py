@@ -356,7 +356,6 @@ def get_song_info(session, song_id):
         contributing_artists.append(sanitize_data(data1['name']))
     for data2 in info['tracks'][0]['album']['artists']:
         album_artists.append(sanitize_data(data2['name']))
-    contributing_artists.remove(album_artists[0]) if album_artists[0] in contributing_artists else None
     info = {
         'artists': contributing_artists,
         'albumartist': [album_artists[0]], # Always use the 1st artist of the album artist
