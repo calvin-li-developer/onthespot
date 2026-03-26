@@ -284,64 +284,66 @@ def tidal_get_lyrics(token, item_id, item_type, metadata, filepath):
 
         lyrics = []
 
-        resp = make_call(f'https://listen.tidal.com/v1/tracks/{item_id}/lyrics/', headers=headers, params=params)
-        if not resp:
-            return False
-
-        if not config.get('only_download_plain_lyrics'):
-            if config.get("embed_branding"):
-                lyrics.append('[re:OnTheSpot]')
-
-            for key in metadata.keys():
-                value = metadata[key]
-                if key in ['title', 'track_title', 'tracktitle'] and config.get("embed_name"):
-                    lyrics.append(f'[ti:{value}]')
-                elif key == 'artists' and config.get("embed_artist"):
-                    lyrics.append(f'[ar:{value}]')
-                elif key in ['album_name', 'album'] and config.get("embed_album"):
-                    lyrics.append(f'[al:{value}]')
-                elif key in ['writers'] and config.get("embed_writers"):
-                    lyrics.append(f'[au:{value}]')
-
-            lyrics.append(f'[by:{resp.get("lyricsProvider").title()}]')
-
-            if config.get("embed_length"):
-                l_ms = int(metadata['length'])
-                if round((l_ms/1000)/60) < 10:
-                    digit="0"
-                else:
-                    digit=""
-                lyrics.append(f'[length:{digit}{round((l_ms/1000)/60)}:{round((l_ms/1000)%60)}]\n')
-
-        default_length = len(lyrics)
-
-        if resp.get('subtitles'):
-            lyric_data = resp['subtitles']
-        elif resp.get('lyrics'):
-            lyric_data = resp['lyrics']
-        else:
-            lyric_data = ''
-
-        for line in lyric_data.split('\n'):
-            if config.get('only_download_plain_lyrics'):
-                line = line.split('] ', 1)[-1]
-            lyrics.append(line)
-
-        merged_lyrics = '\n'.join(lyrics)
-
-        if lyrics:
-            logger.debug(lyrics)
-            if len(lyrics) <= default_length:
+        try:
+            resp = make_call(f'https://listen.tidal.com/v1/tracks/{item_id}/lyrics/', headers=headers, params=params)
+            if not resp:
                 return False
-            if config.get('save_lrc_file'):
-                with open(filepath + '.lrc', 'w', encoding='utf-8') as f:
-                    f.write(merged_lyrics)
-            if config.get('embed_lyrics'):
-                return {"lyrics": merged_lyrics}
+
+            if not config.get('only_download_plain_lyrics'):
+                if config.get("embed_branding"):
+                    lyrics.append('[re:OnTheSpot]')
+
+                for key in metadata.keys():
+                    value = metadata[key]
+                    if key in ['title', 'track_title', 'tracktitle'] and config.get("embed_name"):
+                        lyrics.append(f'[ti:{value}]')
+                    elif key == 'artists' and config.get("embed_artist"):
+                        lyrics.append(f'[ar:{value}]')
+                    elif key in ['album_name', 'album'] and config.get("embed_album"):
+                        lyrics.append(f'[al:{value}]')
+                    elif key in ['writers'] and config.get("embed_writers"):
+                        lyrics.append(f'[au:{value}]')
+
+                lyrics.append(f'[by:{resp.get("lyricsProvider").title()}]')
+
+                if config.get("embed_length"):
+                    l_ms = int(metadata['length'])
+                    if round((l_ms/1000)/60) < 10:
+                        digit="0"
+                    else:
+                        digit=""
+                    lyrics.append(f'[length:{digit}{round((l_ms/1000)/60)}:{round((l_ms/1000)%60)}]\n')
+
+            default_length = len(lyrics)
+
+            if resp.get('subtitles'):
+                lyric_data = resp['subtitles']
+            elif resp.get('lyrics'):
+                lyric_data = resp['lyrics']
             else:
-                return True
-    else:
-        return False
+                lyric_data = ''
+
+            for line in lyric_data.split('\n'):
+                if config.get('only_download_plain_lyrics'):
+                    line = line.split('] ', 1)[-1]
+                lyrics.append(line)
+
+            merged_lyrics = '\n'.join(lyrics)
+
+            if lyrics:
+                logger.debug(lyrics)
+                if len(lyrics) <= default_length:
+                    return False
+                if config.get('save_lrc_file'):
+                    with open(filepath + '.lrc', 'w', encoding='utf-8') as f:
+                        f.write(merged_lyrics)
+                if config.get('embed_lyrics'):
+                    return {"lyrics": merged_lyrics}
+                else:
+                    return True
+        except Exception as e:
+            logger.error(f'Failed to get lyrics for {item_id}: {str(e)}')
+            return False
 
 
 def tidal_get_mpd_data(token, item_id):

@@ -356,8 +356,8 @@ def spotify_get_lyrics(token, item_id, item_type, metadata, filepath):
                 else:
                     logger.info("Unsynced episode lyrics, please open a bug report.")
 
-        except (KeyError, IndexError) as e:
-            logger.error(f'KeyError/Index Error. Failed to get lyrics for {item_id}: {str(e)}\nTraceback: {traceback.format_exc()}')
+        except Exception as e:
+            logger.error(f'Failed to get lyrics for {item_id}: {str(e)}\nTraceback: {traceback.format_exc()}')
 
         merged_lyrics = '\n'.join(lyrics)
 
