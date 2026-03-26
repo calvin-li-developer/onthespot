@@ -249,77 +249,83 @@ def apple_music_get_track_metadata(session, item_id):
 def apple_music_get_lyrics(session, item_id, item_type, metadata, filepath):
     params = {}
     params['include'] = 'lyrics'
-    track_data = make_call(f'{BASE_URL}/catalog/{session.cookies.get("itua")}/songs/{item_id}', params=params, session=session)
+    try:
+        track_data = make_call(f'{BASE_URL}/catalog/{session.cookies.get("itua")}/songs/{item_id}', params=params, session=session)
+        if not track_data:
+            return False
 
-    time_synced = track_data.get('data', [])[0].get('attributes', {}).get('hasTimeSyncedLyrics')
-    if config.get('only_download_synced_lyrics') and not time_synced:
+        time_synced = track_data.get('data', [])[0].get('attributes', {}).get('hasTimeSyncedLyrics')
+        if config.get('only_download_synced_lyrics') and not time_synced:
+            return False
+
+        if len(track_data.get('data', [])[0].get('relationships', {}).get('lyrics', {}).get('data', [])):
+            ttml_data = track_data.get('data', [])[0].get('relationships', {}).get('lyrics', {}).get('data', [])[0].get('attributes', {}).get('ttml')
+            lyrics_list = []
+
+            if not config.get('only_download_plain_lyrics'):
+                if config.get("embed_branding"):
+                    lyrics_list.append('[re:OnTheSpot]')
+
+                for key in metadata.keys():
+                    value = metadata[key]
+                    if key in ['title', 'track_title', 'tracktitle'] and config.get("embed_name"):
+                        lyrics_list.append(f'[ti:{value}]')
+                    elif key == 'artists' and config.get("embed_artist"):
+                        lyrics_list.append(f'[ar:{value}]')
+                    elif key in ['album_name', 'album'] and config.get("embed_album"):
+                        lyrics_list.append(f'[al:{value}]')
+                    elif key in ['writers'] and config.get("embed_writers"):
+                        lyrics_list.append(f'[au:{value}]')
+
+                if config.get("embed_length"):
+                    l_ms = int(metadata['length'])
+                    if round((l_ms/1000)/60) < 10:
+                        digit="0"
+                    else:
+                        digit=""
+                    lyrics_list.append(f'[length:{digit}{str((l_ms/1000)/60)[:1]}:{round((l_ms/1000)%60)}]\n')
+
+            default_length = len(lyrics_list)
+
+            for p in ET.fromstring(ttml_data.replace('`', '')).findall('.//{http://www.w3.org/ns/ttml}p'):
+                begin_time = p.attrib.get('begin')
+                lyric = p.text
+                if lyric:
+                    if time_synced:
+                        if ':' in begin_time:
+                            time_parts = begin_time.split(':')
+                            if len(time_parts) == 3:  # Format: HH:MM:SS.mmm
+                                hours, minutes, seconds = time_parts
+                                minutes = int(minutes) + (int(hours) * 60)
+                            elif len(time_parts) == 2:  # Format: MM:SS.mmm
+                                minutes, seconds = time_parts
+                        else: # Format: SS.mmm
+                            minutes = '0'
+                            seconds = begin_time
+                        try:
+                            seconds, milliseconds = seconds.split('.')
+                        except (TypeError, ValueError):
+                            milliseconds = '0'
+                        formatted_time = f"{int(minutes):02}:{int(seconds):02}.{milliseconds.replace('s', '')[:2]}"
+                        if not config.get('only_download_plain_lyrics'):
+                            lyric = f'[{formatted_time}] {lyric}'
+
+                    lyrics_list.append(lyric)
+
+            merged_lyrics = '\n'.join(lyrics_list)
+            if len(merged_lyrics) <= default_length:
+                return False
+
+            if config.get('save_lrc_file'):
+                with open(filepath + '.lrc', 'w', encoding='utf-8') as f:
+                    f.write(merged_lyrics)
+            if config.get('embed_lyrics'):
+                return {"lyrics": merged_lyrics}
+            else:
+                return False
+    except Exception as e:
+        logger.error(f'Failed to get lyrics for {item_id}: {str(e)}')
         return False
-
-    if len(track_data.get('data', [])[0].get('relationships', {}).get('lyrics', {}).get('data', [])):
-        ttml_data = track_data.get('data', [])[0].get('relationships', {}).get('lyrics', {}).get('data', [])[0].get('attributes', {}).get('ttml')
-        lyrics_list = []
-
-        if not config.get('only_download_plain_lyrics'):
-            if config.get("embed_branding"):
-                lyrics_list.append('[re:OnTheSpot]')
-
-            for key in metadata.keys():
-                value = metadata[key]
-                if key in ['title', 'track_title', 'tracktitle'] and config.get("embed_name"):
-                    lyrics_list.append(f'[ti:{value}]')
-                elif key == 'artists' and config.get("embed_artist"):
-                    lyrics_list.append(f'[ar:{value}]')
-                elif key in ['album_name', 'album'] and config.get("embed_album"):
-                    lyrics_list.append(f'[al:{value}]')
-                elif key in ['writers'] and config.get("embed_writers"):
-                    lyrics_list.append(f'[au:{value}]')
-
-            if config.get("embed_length"):
-                l_ms = int(metadata['length'])
-                if round((l_ms/1000)/60) < 10:
-                    digit="0"
-                else:
-                    digit=""
-                lyrics_list.append(f'[length:{digit}{str((l_ms/1000)/60)[:1]}:{round((l_ms/1000)%60)}]\n')
-
-        default_length = len(lyrics_list)
-
-        for p in ET.fromstring(ttml_data.replace('`', '')).findall('.//{http://www.w3.org/ns/ttml}p'):
-            begin_time = p.attrib.get('begin')
-            lyric = p.text
-            if lyric:
-                if time_synced:
-                    if ':' in begin_time:
-                        time_parts = begin_time.split(':')
-                        if len(time_parts) == 3:  # Format: HH:MM:SS.mmm
-                            hours, minutes, seconds = time_parts
-                            minutes = int(minutes) + (int(hours) * 60)
-                        elif len(time_parts) == 2:  # Format: MM:SS.mmm
-                            minutes, seconds = time_parts
-                    else: # Format: SS.mmm
-                        minutes = '0'
-                        seconds = begin_time
-                    try:
-                        seconds, milliseconds = seconds.split('.')
-                    except (TypeError, ValueError):
-                        milliseconds = '0'
-                    formatted_time = f"{int(minutes):02}:{int(seconds):02}.{milliseconds.replace('s', '')[:2]}"
-                    if not config.get('only_download_plain_lyrics'):
-                        lyric = f'[{formatted_time}] {lyric}'
-
-                lyrics_list.append(lyric)
-
-        merged_lyrics = '\n'.join(lyrics_list)
-        if len(merged_lyrics) <= default_length:
-            return False
-
-        if config.get('save_lrc_file'):
-            with open(filepath + '.lrc', 'w', encoding='utf-8') as f:
-                f.write(merged_lyrics)
-        if config.get('embed_lyrics'):
-            return {"lyrics": merged_lyrics}
-        else:
-            return False
 
 
 def apple_music_get_webplayback_info(session, item_id):
